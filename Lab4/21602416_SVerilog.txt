@@ -1,0 +1,144 @@
+// CS223 - Section 1 - Lab 4
+// Munib Emre Sevilgen
+// 21602416
+// Trainer Pack: 09
+
+// Modules
+
+module traffic_light ( input logic clk_out, reset, sa, sb, output logic [2:0]la, [2:0]lb);
+    logic [2:0] state;
+    logic [2:0] nextstate;
+    logic [2:0] s0;
+    assign s0[0] = 0;
+    assign s0[1] = 0;
+    assign s0[2] = 0;
+
+
+    //logic clk_out;
+    //ClockDivider clock_divider(clk_in, clk_out);
+    always_ff@ (posedge clk_out, posedge reset)
+       if (reset) state <= s0;
+       else state <= nextstate;
+        
+        next_state_function next(state, sa, sb, nextstate);
+        output_logic_function logic_output(state, la, lb);
+
+endmodule
+
+module ClockDivider(
+input clk_in,
+output clk_out
+);
+logic [25:0] count = {26{1'b0}};
+logic clk_NoBuf;
+always@ (posedge clk_in) begin
+count <= count + 1;
+end
+// you can modify 25 to have different clock rate
+assign clk_NoBuf = count[25];
+BUFG BUFG_inst (
+.I(clk_NoBuf), // 1-bit input: Clock input
+.O(clk_out) // 1-bit output: Clock output
+);
+endmodule
+
+module next_state_function (input logic [2:0] s, sa, sb, output logic [2:0] snext );
+    logic [31:0] o;
+    logic [4:0]in;
+    assign in[4:2] = s[2:0];
+    assign in[1] = sa;
+    assign in[0] = sb;
+    decoder dec(in, o);
+    assign snext[0] = o[0] | o[1] | o[8] | o[9] | o[10] | o[11] | o[16] | o[18] | o[24] | o[25] | o[26] | o[27];
+    assign snext[1] = o[4] | o[5] | o[6] | o[7] | o[8] | o[9] | o[10] | o[11] | o[20] | o[21] | o[22] | o[23] | o[24] | o[25] | o[26] | o[27];
+    assign snext[2] = o[12] | o[13] | o[14] | o[15] | o[16] | o[17] | o[18] | o[19] | o[20] | o[21] | o[22] | o[23] | o[24] | o[25] | o[26] | o[27];
+endmodule
+
+module decoder(input logic [4:0] a, output logic [31:0] o);
+    always_comb
+    case(a)
+        5'b00000: o = 32'b00000000000000000000000000000001;
+        5'b00001: o = 32'b00000000000000000000000000000010;
+        5'b00010: o = 32'b00000000000000000000000000000100;
+        5'b00011: o = 32'b00000000000000000000000000001000;
+        5'b00100: o = 32'b00000000000000000000000000010000;
+        5'b00101: o = 32'b00000000000000000000000000100000;
+        5'b00110: o = 32'b00000000000000000000000001000000;
+        5'b00111: o = 32'b00000000000000000000000010000000;
+        5'b01000: o = 32'b00000000000000000000000100000000;
+        5'b01001: o = 32'b00000000000000000000001000000000;
+        5'b01010: o = 32'b00000000000000000000010000000000;
+        5'b01011: o = 32'b00000000000000000000100000000000;
+        5'b01100: o = 32'b00000000000000000001000000000000;
+        5'b01101: o = 32'b00000000000000000010000000000000;
+        5'b01110: o = 32'b00000000000000000100000000000000;
+        5'b01111: o = 32'b00000000000000001000000000000000;
+        5'b10000: o = 32'b00000000000000010000000000000000;
+        5'b10001: o = 32'b00000000000000100000000000000000;
+        5'b10010: o = 32'b00000000000001000000000000000000;
+        5'b10011: o = 32'b00000000000010000000000000000000;
+        5'b10100: o = 32'b00000000000100000000000000000000;
+        5'b10101: o = 32'b00000000001000000000000000000000;
+        5'b10110: o = 32'b00000000010000000000000000000000;
+        5'b10111: o = 32'b00000000100000000000000000000000;
+        5'b11000: o = 32'b00000001000000000000000000000000;
+        5'b11001: o = 32'b00000010000000000000000000000000;
+        5'b11010: o = 32'b00000100000000000000000000000000;
+        5'b11011: o = 32'b00001000000000000000000000000000;
+        5'b11100: o = 32'b00010000000000000000000000000000;
+        5'b11101: o = 32'b00100000000000000000000000000000;
+        5'b11110: o = 32'b01000000000000000000000000000000;
+        5'b11111: o = 32'b10000000000000000000000000000000;
+        default: o = 32'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
+    endcase
+endmodule
+
+module output_logic_function (input logic [2:0] s, output logic [2:0] la, [2:0] lb);
+    four_to_one_mux mux1 (~s[0], 0, 0, 0, s[2], s[1], la[2]);
+    four_to_one_mux mux2 (1, 0, 0, s[0], s[2], s[1], la[1]);
+    four_to_one_mux mux3 (1, 1, 1, 1, s[2], s[1], la[0]);
+    four_to_one_mux mux4 (0, 0, ~s[0], 0, s[2], s[1], lb[2]);
+    four_to_one_mux mux5 (0, s[0], s[0], 0, s[2], s[1], lb[1]);
+    four_to_one_mux mux6 (1, 1, s[0], 1, s[2], s[1], lb[0]);
+endmodule
+
+module four_to_one_mux(input logic i3, i2, i1, i0, sel1, sel0, output logic out);
+    assign out = sel1 ? (sel0 ? i3 : i2) : (sel0 ? i1 : i0);
+endmodule
+
+
+// Testbench
+module testbench();
+    logic sa, sb;
+    logic [2:0] la, lb;
+    logic reset;
+    logic clk;
+   
+    
+    traffic_light dut(clk, reset, 0, 0, la, lb);
+
+        
+    initial begin
+        reset = 1; sa = 0; sb = 0;#10;
+        sb = 1; #10;
+        sa = 1; sb = 0; #10;
+        sb = 1; #10;
+        
+        reset = 0; sa = 0; sb = 0;#10;
+        sb = 1; #10;
+        sa = 1; sb = 0; #10;
+        sb = 1; #10;
+        
+        reset = 0; sa = 0; sb = 0;#10;
+        sb = 1; #10;
+        sa = 1; sb = 0; #10;
+        sb = 1; #10;   
+    end
+        
+    always
+        begin
+        clk = 0; #5; clk = 1; #5;
+        end
+
+endmodule
+

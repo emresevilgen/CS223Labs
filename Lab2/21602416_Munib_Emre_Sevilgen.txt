@@ -1,0 +1,104 @@
+// CS223 - Section 1 - Lab 2
+// Munib Emre Sevilgen
+// 21602416
+// Trainer Pack: 09
+
+
+// Dataflow Systemverilog module for a 1-bit fulladder
+module one_bit_full_adder_dataflow (input logic x, y, cin, output logic sum, cout);
+    assign sum = x ^ y ^ cin;
+    assign cout = x & y | (x ^ y) & cin;
+endmodule
+
+// Testbench module for the dataflow 1-bit fulladder module
+module testbench1();
+    logic x, y, cin;
+    logic sum, cout;
+    one_bit_full_adder_dataflow dut(x, y, cin, sum, cout);
+    initial begin
+        x = 0; y = 0; cin = 0; #10;
+        cin = 1; #10;
+        y = 1; cin = 0; #10;
+        cin = 1; #10;
+        x = 1; y = 0; cin = 0; #10;
+        cin = 1; #10;
+        y = 1; cin = 0; #10;
+        cin = 1; #10;
+    end
+endmodule
+
+// Structural Systemverilog module for a 1-bit fulladder
+module one_bit_full_adder_structural (input logic x, y, cin, output logic sum, cout);
+    logic l1, l2, l3;
+    xor (l1, x, y);
+    xor (sum, l1, cin);
+    and (l2, l1, cin);
+    and(l3, x, y);
+    or (cout, l2, l3);
+endmodule
+
+// Testbench module for the structural 1-bit fulladder module
+module testbench2();
+    logic x, y, cin;
+    logic sum, cout;
+    one_bit_full_adder_structural dut(x, y, cin, sum, cout);
+    initial begin
+        x = 0; y = 0; cin = 0; #10;
+        cin = 1; #10;
+        y = 1; cin = 0; #10;
+        cin = 1; #10;
+        x = 1; y = 0; cin = 0; #10;
+        cin = 1; #10;
+        y = 1; cin = 0; #10;
+        cin = 1; #10;
+    end
+endmodule
+
+// Structural Systemverilog module for a 2-bit adder
+module two_bit_adder (input logic x0, x1, y0, y1, cin, output logic sum0, sum1, cout);
+    logic a;
+    one_bit_full_adder_structural full_adder(x0, y0, cin, sum0, a);
+    one_bit_full_adder_structural full_adder2(x1, y1, a, sum1, cout);
+endmodule
+
+// Testbench module for 2-bit adder module
+module testbench3();
+    logic x0, x1, y0, y1, cin;
+    logic sum0, sum1, cout;
+    two_bit_adder dut(x0, x1, y0, y1, cin, sum0, sum1, cout);
+    initial begin
+        x0 = 0; x1 = 0; y0 = 0; y1 = 0; cin = 0; #10;
+        cin = 1; #10;
+        y1 = 1; cin = 0; #10;
+        cin = 1; #10;
+        y0 = 1; y1 = 0; cin = 0; #10;
+        cin = 1; #10;
+        y1 = 1; cin = 0; #10;
+        cin = 1; #10;
+        x1 = 1; y0 = 0; y1 = 0; cin = 0; #10;
+        cin = 1; #10;
+        y1 = 1; cin = 0; #10;
+        cin = 1; #10;
+        y0 = 1; y1 = 0; cin = 0; #10;
+        cin = 1; #10;
+        y1 = 1; cin = 0; #10;
+        cin = 1; #10;
+        x0 = 1; x1 = 0; y0 = 0; y1 = 0; cin = 0; #10;
+        cin = 1; #10;
+        y1 = 1; cin = 0; #10;
+        cin = 1; #10;
+        y0 = 1; y1 = 0; cin = 0; #10;
+        cin = 1; #10;
+        y1 = 1; cin = 0; #10;
+        cin = 1; #10;
+        x1 = 1; y0 = 0; y1 = 0; cin = 0; #10;
+        cin = 1; #10;
+        y1 = 1; cin = 0; #10;
+        cin = 1; #10;
+        y0 = 1; y1 = 0; cin = 0; #10;
+        cin = 1; #10;
+        y1 = 1; cin = 0; #10;
+        cin = 1; #10;
+        end
+endmodule
+
